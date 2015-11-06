@@ -2,9 +2,7 @@
 
 require 'bunny'
 require 'logger'
-
-require_relative 'event'
-require_relative '../worklog'
+require 'ostruct'
 
 module Messaging
 
@@ -12,20 +10,24 @@ module Messaging
   # It then listens for incoming messages.
   class MessageReceiver
 
-    # initialize
-    #
-    # auto_recover: should be pretty self explanatory.
-    # queue_id: The id of the queue to subscribe to.
-    def initialize(auto_recover: false, queue_id: 'anonymous')
-      @logger = Logger.new(STDOUT)
-      @conn = Bunny.new(automatically_recover: auto_recover)
-      @conn.start
-      channel = @conn.create_channel
-      @queue = channel.queue(queue_id)
-      @logger.debug 'EventReceiver ready. Waiting to start'
+    def self.single_queue_receiver(options = OpenStruct.new, queue_id:)
+      yield(options) if block_given?
+      self.new(options.to_h) do |channel|
+        channel.queue(queue_id)
+      end
     end
 
-    # subscribe to the given queue and execute given block whenever a message is received.
+    def self.broadcast_receiver(options = OpenStruct.new, broadcast_id:)
+      yield(options) if block_given?
+      self.new(options.to_h) do |channel|
+        queue = channel.queue('', exclusive: true)
+        queue.bind(channel.fanout(broadcast_id))
+        queue
+      end
+    end
+
+
+    # subscribe to queue and execute given block whenever a message is received.
     #
     # Non-blocking implementation of the start method.
     def start(&block)
@@ -41,6 +43,21 @@ module Messaging
 
     private
 
+    def initialize(options=nil)
+      @logger = Logger.new(STDOUT)
+
+      @conn = Bunny.new(options)
+      @conn.start
+      channel = @conn.create_channel
+
+      @queue = yield(channel)
+      @logger.debug 'EventReceiver ready. Waiting to start'
+    end
+
+    # Subscribe to the queue and execute the given block.
+    #
+    # This is where the actual work gets done. Can be called
+    # in either blocking or non-blocking mode using the parameter 'blocking'
     def subscribe(blocking = false, &block)
       begin
         @queue.subscribe(block: blocking) do |_, properties, body|
