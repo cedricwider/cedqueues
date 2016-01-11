@@ -41,6 +41,11 @@ module Messaging
       subscribe(true, &block)
     end
 
+    def close
+      @queue.close
+      @conn.close
+    end
+
     private
 
     def initialize(options=nil)

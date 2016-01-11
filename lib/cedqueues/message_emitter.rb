@@ -21,14 +21,14 @@ module Messaging
                })
     end
 
-    def publish(content)
+    def publish(content, properties = nil)
       conn = Bunny.new(@connect_settings)
       conn.start
 
       channel = conn.create_channel
       exchange = @exchange_creator.call(channel)
 
-      exchange.publish(content, @publish_args)
+      exchange.publish(content, properties || @publish_args)
 
       conn.close
     end
