@@ -7,8 +7,8 @@ describe 'Sending broadcast messages' do
     'rspec'
   end
 
-  it 'sends multicast messages' do
-    configure = -> (config) {
+  let :configure do
+    -> (config) {
       config.host = '127.0.0.1'
       config.port = 5672
       config.ssl = false
@@ -19,6 +19,9 @@ describe 'Sending broadcast messages' do
       config.frame_max = 131072
       config.auth_mechanism = 'PLAIN'
     }
+  end
+
+  it 'sends multicast messages' do
     sender = Messaging::MessageEmitter.broadcast_sender(broadcast_id: broadcast_id, &configure)
     receiver_one = Messaging::MessageReceiver.broadcast_receiver(broadcast_id: broadcast_id, &configure)
     receiver_two = Messaging::MessageReceiver.broadcast_receiver(broadcast_id: broadcast_id, &configure)
