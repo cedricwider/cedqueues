@@ -1,4 +1,5 @@
 require 'ostruct'
+require 'bunny'
 
 module Messaging
   class MessageEmitter

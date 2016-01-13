@@ -3,16 +3,16 @@
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'rtec'
+gem 'cedqueues'
 ```
 
 And then execute:
 
-    $ bundle
+    $ bundle install
 
 Or install it yourself as:
 
-    $ gem install rtec
+    $ gem install cedqueues
 
 ## Usage
 
@@ -32,4 +32,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/cedric
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
